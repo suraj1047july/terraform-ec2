@@ -1,0 +1,38 @@
+name: "wiz-cli"
+
+on:
+  push:
+    branches:
+      - '**'        # triggers for all branches
+  pull_request:
+    branches:
+      - '**'        # triggers PRs from any branch
+
+jobs:
+  wiz-cli-iac-scan:
+    name: "Wiz-cli IaC Scan"
+    runs-on: ubuntu-latest
+
+    env:
+      SCAN_PATH: "." 
+      POLICY: "Default IaC policy"
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download Wiz CLI
+        run: |
+          curl -o wizcli https://downloads.wiz.io/v1/wizcli/latest/wizcli-linux-amd64
+          chmod +x wizcli
+
+      - name: Run Wiz CLI IaC scan
+        env:
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+          WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+        run: |
+          ./wizcli scan dir $SCAN_PATH --policies "$POLICY"
